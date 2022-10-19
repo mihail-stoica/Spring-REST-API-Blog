@@ -1,0 +1,1 @@
+REST API using Spring Boot, Spring Security, JWT, Spring Data JPA, Hibernate, PostgreSQL
