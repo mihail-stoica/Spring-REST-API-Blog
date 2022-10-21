@@ -19,7 +19,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -184,6 +184,42 @@ public class PostControllerTests {
         ResultActions response = mockMvc.perform(put("/api/posts/{id}", postId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedPostDto)));
+
+        // then - verify the output
+        response.andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @DisplayName("JUnit test for deletePostById positive scenario - valid post id")
+    @Test
+    public void givenPostId_whenDeletePostById_thenReturn200() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+
+        // stub method for postService.deletePostById
+        willDoNothing().given(postService).deletePostById(postId);
+
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(delete("/api/posts/{id}", postId));
+
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @DisplayName("JUnit test for deletePostById negative scenario - invalid post id")
+    @Test
+    public void givenPostId_whenDeletePostById_thenReturn404() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+
+        // stub method for postService.updatePost
+        willThrow(new ResourceNotFoundException("Post", "id", postId)).given(postService).deletePostById(postId);
+
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(delete("/api/posts/{id}", postId));
 
         // then - verify the output
         response.andExpect(status().isNotFound())
