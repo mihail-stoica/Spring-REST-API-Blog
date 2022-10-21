@@ -3,7 +3,6 @@ package com.mihailstoica.blog.service;
 import com.mihailstoica.blog.payload.PostDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PostService {
 
@@ -12,4 +11,6 @@ public interface PostService {
     List<PostDto> getAllPosts();
 
     PostDto getPostById(Long id);
+
+    PostDto updatePost(PostDto postDto, Long id);
 }

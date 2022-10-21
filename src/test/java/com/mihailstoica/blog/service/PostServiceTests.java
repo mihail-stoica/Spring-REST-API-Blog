@@ -78,7 +78,7 @@ public class PostServiceTests {
         assertThat(savedPostsDto).isEqualTo(List.of(postDto));
     }
 
-    @DisplayName("JUnit test for getPostById")
+    @DisplayName("JUnit test for getPostById method")
     @Test
     public void givenPostId_whenGetPostById_thenReturnPostDtoObject() {
 
@@ -92,6 +92,31 @@ public class PostServiceTests {
 
         // then - verify the output
         assertThat(savedPostDto).isEqualTo(postDto);
+    }
+
+    @DisplayName("JUnit test for updatePost")
+    @Test
+    public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturnUpdatePostDtoObject() {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        PostDto updatedPostDto = new PostDto();
+        updatedPostDto.setId(postId);
+        updatedPostDto.setTitle("Title updated");
+        updatedPostDto.setDescription("Description updated");
+        updatedPostDto.setContent("Content updated");
+
+        // stub method for postRepository.findById
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+        // stub method postRepository.save()
+        given(postRepository.save(post)).willReturn(post);
+
+        // when - action or behaviour that we are going to test
+        PostDto savedPostDto = postService.updatePost(updatedPostDto, postId);
+
+        // then - verify the output
+        assertThat(savedPostDto).isEqualTo(updatedPostDto);
+
     }
 
 }
