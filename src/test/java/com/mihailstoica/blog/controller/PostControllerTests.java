@@ -1,11 +1,9 @@
 package com.mihailstoica.blog.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
-import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,13 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -136,6 +132,60 @@ public class PostControllerTests {
         ResultActions response = mockMvc.perform(get("/api/posts/{id}", postId));
 
         //then - verify the output
+        response.andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @DisplayName("JUnit test for updatePost positive scenario - valid post id")
+    @Test
+    public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturnUpdatePostDtoObject() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        PostDto updatedPostDto = new PostDto();
+        updatedPostDto.setId(postId);
+        updatedPostDto.setTitle("Title updated");
+        updatedPostDto.setDescription("Description updated");
+        updatedPostDto.setContent("Content updated");
+
+        // stub method for postService.updatePost
+        given(postService.updatePost(updatedPostDto, postId)).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(put("/api/posts/{id}", postId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedPostDto)));
+
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.title", is(updatedPostDto.getTitle())))
+                .andExpect(jsonPath("$.description", is(updatedPostDto.getDescription())))
+                .andExpect(jsonPath("$.content", is(updatedPostDto.getContent())));
+    }
+
+    @DisplayName("JUnit test for updatePost negative scenario - invalid post id")
+    @Test
+    public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturn404() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        PostDto updatedPostDto = new PostDto();
+        updatedPostDto.setId(postId);
+        updatedPostDto.setTitle("Title updated");
+        updatedPostDto.setDescription("Description updated");
+        updatedPostDto.setContent("Content updated");
+
+        // stub method for postService.updatePost
+        given(postService.updatePost(updatedPostDto, postId))
+                .willThrow(new ResourceNotFoundException("Post", "id", postId));
+
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(put("/api/posts/{id}", postId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedPostDto)));
+
+        // then - verify the output
         response.andExpect(status().isNotFound())
                 .andDo(print());
     }
