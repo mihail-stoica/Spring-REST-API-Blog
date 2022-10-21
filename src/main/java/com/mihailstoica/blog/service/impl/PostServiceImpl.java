@@ -1,12 +1,14 @@
 package com.mihailstoica.blog.service.impl;
 
 import com.mihailstoica.blog.entity.Post;
+import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.PostService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +22,7 @@ public class PostServiceImpl implements PostService {
 
     // convert DTO to Entity
     private Post mapToEntity(PostDto postDto) {
+
         Post post = new Post();
         post.setTitle(postDto.getTitle());
         post.setDescription(postDto.getDescription());
@@ -55,5 +58,12 @@ public class PostServiceImpl implements PostService {
         return posts.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PostDto getPostById(Long id) {
+
+        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
+        return mapToDTO(post);
     }
 }

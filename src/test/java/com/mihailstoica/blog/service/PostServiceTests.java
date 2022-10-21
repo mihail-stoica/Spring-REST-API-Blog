@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -77,5 +78,20 @@ public class PostServiceTests {
         assertThat(savedPostsDto).isEqualTo(List.of(postDto));
     }
 
+    @DisplayName("JUnit test for getPostById")
+    @Test
+    public void givenPostId_whenGetPostById_thenReturnPostDtoObject() {
+
+        // given - precondition or setup
+        Long id = post.getId();
+        // stub method for postRepository.findById
+        given(postRepository.findById(id)).willReturn(Optional.of(post));
+
+        // when - action or behaviour that we are going to test
+        PostDto savedPostDto = postService.getPostById(id);
+
+        // then - verify the output
+        assertThat(savedPostDto).isEqualTo(postDto);
+    }
 
 }
