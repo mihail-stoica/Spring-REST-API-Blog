@@ -17,6 +17,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTests {
@@ -117,6 +120,26 @@ public class PostServiceTests {
         // then - verify the output
         assertThat(savedPostDto).isEqualTo(updatedPostDto);
 
+    }
+
+    @DisplayName("JUnit test for deletePostById")
+    @Test
+    public void givenPostId_whenDeletePostById_thenNothing() {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+
+        // stub method for postRepository.findById
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+
+        // stub method for postRepository.deleteById
+        willDoNothing().given(postRepository).delete(post);
+
+        // when - action or behaviour that we are going to test
+        postService.deletePostById(postId);
+
+        // then - verify the output
+        verify(postRepository, times(1)).delete(post);
     }
 
 }
