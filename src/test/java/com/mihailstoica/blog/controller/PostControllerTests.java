@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
+import com.mihailstoica.blog.payload.PostResponse;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -79,20 +80,37 @@ public class PostControllerTests {
 
     @DisplayName("JUnit test for getAllPosts")
     @Test
-    public void givenListOfPostDto_whenGetAllPosts_thenReturnPostDtoList() throws Exception {
+    public void givenPageNoAndPageSizeAndSortByAndSortDir_whenGetAllPosts_thenReturnPostResponse() throws Exception {
 
         // given - precondition or setup
-        List<PostDto> listOfPostDto = List.of(postDto);
+        int pageNo = 0;
+        int pageSize = 10;
+        String sortBy = "id";
+        String sortDir = "asc";
+
+        List<PostDto> contentDto = List.of(postDto);
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(contentDto);
+        postResponse.setPageNo(pageNo);
+        postResponse.setPageSize(pageSize);
+        postResponse.setTotalElements(contentDto.size());
+        postResponse.setTotalPages(10);
+        postResponse.setLast(true);
         //stub method for postService.getAllPosts
-        given(postService.getAllPosts()).willReturn(listOfPostDto);
+        given(postService.getAllPosts(pageNo, pageSize, sortBy, sortDir)).willReturn(postResponse);
 
         // when - action or behaviour that we are going to test
-        ResultActions response = mockMvc.perform(get("/api/posts"));
+        ResultActions response = mockMvc.perform(get("/api/posts?pageNo=0&pageSize=10&sortBy=id&sorDir=asc"));
 
         // then - verify the output
         response.andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.size()", is(listOfPostDto.size())));
+                .andExpect(jsonPath("$.content.size()", is(postResponse.getContent().size())))
+                .andExpect(jsonPath("$.['pageNo']", is(postResponse.getPageNo())))
+                .andExpect(jsonPath("$.['pageSize']", is((postResponse.getPageSize()))))
+                .andExpect(jsonPath("$.['totalElements']", is(((int)postResponse.getTotalElements()))))
+                .andExpect(jsonPath("$.['totalPages']", is((postResponse.getTotalPages()))))
+                .andExpect(jsonPath("$.['last']", is((postResponse.isLast()))));
     }
 
     // positive scenario - valid post id
@@ -114,7 +132,6 @@ public class PostControllerTests {
                 .andExpect(jsonPath("$.title", is(postDto.getTitle())))
                 .andExpect(jsonPath("$.description", is(postDto.getDescription())))
                 .andExpect(jsonPath("$.content", is(postDto.getContent())));
-
     }
 
     //negative scenario - invalid post id

@@ -3,13 +3,16 @@ package com.mihailstoica.blog.service.impl;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
+import com.mihailstoica.blog.payload.PostResponse;
 import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -52,12 +55,32 @@ public class PostServiceImpl implements PostService {
         return mapToDTO(newPost);
     }
     @Override
-    public List<PostDto> getAllPosts() {
+    public PostResponse getAllPosts(int pageNo, int pageSize, String sortBy, String sortDir) {
 
-        List<Post> posts = postRepository.findAll();
-        return posts.stream()
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.DESC.name()) ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        // create Pageable instance
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Post> posts = postRepository.findAll(pageable);
+
+        //get content from page object
+        List<Post> postList = posts.getContent();
+
+        List<PostDto> content = postList.stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        PostResponse response = new PostResponse();
+        response.setContent(content);
+        response.setPageNo(posts.getNumber());
+        response.setPageSize(posts.getSize());
+        response.setTotalElements(posts.getTotalElements());
+        response.setTotalPages(posts.getTotalPages());
+        response.setLast(posts.isLast());
+
+        return response;
     }
 
     @Override
