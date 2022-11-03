@@ -30,7 +30,7 @@ public class CommentServiceTests {
     private PostRepository postRepository;
 
     @InjectMocks
-    CommentServiceImpl commentService;
+    private CommentServiceImpl commentService;
 
     @Mock
     private Page<Comment> comments;
