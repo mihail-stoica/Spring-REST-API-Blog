@@ -4,10 +4,18 @@ import com.mihailstoica.blog.entity.Comment;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.CommentDto;
+import com.mihailstoica.blog.payload.CommentResponse;
 import com.mihailstoica.blog.repository.CommentRepository;
 import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.CommentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -56,4 +64,36 @@ public class CommentServiceImpl implements CommentService {
         Comment newComment = commentRepository.save(comment);
         return mapToDTO(newComment);
     }
+
+    @Override
+    public CommentResponse getAllCommentsByPostId(Long postId, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.DESC.name()) ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        // create Pageable instance
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Comment> comments = commentRepository.findAll(pageable);
+
+        //get content from page object
+        List<Comment> commentList = comments.getContent()
+                .stream()
+                .filter(comment -> Objects.equals(comment.getPost().getId(), postId))
+                .toList();
+
+        List<CommentDto> content = commentList.stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        CommentResponse response = new CommentResponse();
+        response.setContent(content);
+        response.setPageNo(comments.getNumber());
+        response.setPageSize(comments.getSize());
+        response.setTotalElements(comments.getTotalElements());
+        response.setTotalPages(comments.getTotalPages());
+        response.setLast(comments.isLast());
+
+        return response;
+    }
+
 }

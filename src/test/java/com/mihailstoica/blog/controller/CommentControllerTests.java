@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mihailstoica.blog.entity.Comment;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.payload.CommentDto;
+import com.mihailstoica.blog.payload.CommentResponse;
 import com.mihailstoica.blog.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,9 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,5 +92,42 @@ public class CommentControllerTests {
                 .andExpect(jsonPath("$.body", is(commentDto.getBody())));
     }
 
+    @DisplayName("JUnit test for getAllCommentsByPostId")
+    @Test
+    public void givenPageNoAndPageSizeAndSortByAndSortDir_whenGetAllPosts_thenReturnPostResponse() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        int pageNo = 0;
+        int pageSize = 10;
+        String sortBy = "id";
+        String sortDir = "asc";
+
+        List<CommentDto> contentDto = List.of(commentDto);
+        CommentResponse commentResponse = new CommentResponse();
+        commentResponse.setContent(contentDto);
+        commentResponse.setPageNo(pageNo);
+        commentResponse.setPageSize(pageSize);
+        commentResponse.setTotalElements(contentDto.size());
+        commentResponse.setTotalPages(10);
+        commentResponse.setLast(true);
+        //stub method for postService.getAllPosts
+        given(commentService.getAllCommentsByPostId(post.getId(), pageNo, pageSize, sortBy, sortDir))
+                .willReturn(commentResponse);
+
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(get(
+                "/api/posts/{postId}/comments?pageNo=0&pageSize=10&sortBy=id&sorDir=asc", postId));
+
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.content.size()", is(commentResponse.getContent().size())))
+                .andExpect(jsonPath("$.['pageNo']", is(commentResponse.getPageNo())))
+                .andExpect(jsonPath("$.['pageSize']", is((commentResponse.getPageSize()))))
+                .andExpect(jsonPath("$.['totalElements']", is(((int)commentResponse.getTotalElements()))))
+                .andExpect(jsonPath("$.['totalPages']", is((commentResponse.getTotalPages()))))
+                .andExpect(jsonPath("$.['last']", is((commentResponse.isLast()))));
+    }
 
 }

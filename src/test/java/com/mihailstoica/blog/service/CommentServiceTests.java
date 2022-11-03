@@ -3,6 +3,7 @@ package com.mihailstoica.blog.service;
 import com.mihailstoica.blog.entity.Comment;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.payload.CommentDto;
+import com.mihailstoica.blog.payload.CommentResponse;
 import com.mihailstoica.blog.repository.CommentRepository;
 import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.impl.CommentServiceImpl;
@@ -14,7 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,6 +82,64 @@ public class CommentServiceTests {
         CommentDto savedCommentDto = commentService.createComment(post.getId(), commentDto);
         // then - verify the output
         assertThat(savedCommentDto).isEqualTo(commentDto);
+    }
+
+    @DisplayName("JUnit test for getAllPosts method")
+    @Test
+    public void givenCommentRepositoryAndPageNoAndPageSizeAndSortByAndSortDir_whenGetAllComments_thenReturnCommentsDtoList() {
+
+        // given - precondition or setup
+        int pageNo = 0;
+        int pageSize = 10;
+        String sortBy = "id";
+        String sortDir = "asc";
+
+        Comment comment1 = new Comment();
+        comment1.setId(1L);
+        comment1.setName("Test-name 1");
+        comment1.setEmail("testemail@test.1");
+        comment1.setBody("Body of post 1");
+        comment1.setPost(post);
+
+        Comment comment2 = new Comment();
+        comment2.setId(2L);
+        comment2.setName("Test-name 2");;
+        comment2.setEmail("testemail@test.2");
+        comment2.setBody("Body of post 2");
+        comment2.setPost(post);
+
+        CommentDto commentDto1 = new CommentDto();
+        commentDto1.setId(comment1.getId());
+        commentDto1.setName(comment1.getName());
+        commentDto1.setEmail(comment1.getEmail());
+        commentDto1.setBody(comment1.getBody());
+
+        CommentDto commentDto2 = new CommentDto();
+        commentDto2.setId(comment2.getId());
+        commentDto2.setName(comment2.getName());
+        commentDto2.setEmail(comment2.getEmail());
+        commentDto2.setBody(comment2.getBody());
+
+        List<Comment> commentList = List.of(comment1, comment2);
+        List<CommentDto> content = List.of(commentDto1, commentDto2);
+
+        Sort sort = Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        given(commentRepository.findAll(pageable)).willReturn(comments);
+        given(comments.getContent()).willReturn(commentList);
+
+        // when - action or behaviour that we are going to test
+        CommentResponse savedCommentsDto = commentService.getAllCommentsByPostId(
+                post.getId(), pageNo, pageSize, sortBy, sortDir);
+
+        // then - verify the output
+        assertThat(savedCommentsDto.getContent()).isEqualTo(content);
+        assertThat(savedCommentsDto.getPageNo()).isEqualTo(this.comments.getNumber());
+        assertThat(savedCommentsDto.getPageSize()).isEqualTo(this.comments.getSize());
+        assertThat(savedCommentsDto.getTotalElements()).isEqualTo(this.comments.getTotalElements());
+        assertThat(savedCommentsDto.getTotalPages()).isEqualTo(this.comments.getTotalPages());
+        assertThat(savedCommentsDto.isLast()).isEqualTo(this.comments.isLast());
     }
 
 
