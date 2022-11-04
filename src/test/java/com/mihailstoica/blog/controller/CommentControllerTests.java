@@ -3,9 +3,12 @@ package com.mihailstoica.blog.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mihailstoica.blog.entity.Comment;
 import com.mihailstoica.blog.entity.Post;
+import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.CommentDto;
 import com.mihailstoica.blog.payload.CommentResponse;
+import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.service.CommentService;
+import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +37,8 @@ public class CommentControllerTests {
     private MockMvc mockMvc;
 
     @MockBean
+    private PostService postService;
+    @MockBean
     private CommentService commentService;
 
     @MockBean
@@ -48,6 +53,8 @@ public class CommentControllerTests {
 
     private Post post;
 
+    private PostDto postDto;
+
     @BeforeEach
     public void setup() {
 
@@ -56,6 +63,12 @@ public class CommentControllerTests {
         this.post.setTitle("Title");
         this.post.setDescription("Description");
         this.post.setContent("Content");
+
+        this.postDto = new PostDto();
+        this.postDto.setId(post.getId());
+        this.postDto.setTitle(post.getTitle());
+        this.postDto.setDescription(post.getDescription());
+        this.postDto.setContent(post.getContent());
 
         this.comment = new Comment();
         this.comment.setId(1L);
@@ -71,7 +84,7 @@ public class CommentControllerTests {
         this.commentDto.setBody(comment.getBody());
     }
 
-    @DisplayName("JUnit test for")
+    @DisplayName("JUnit test for createComment")
     @Test
     public void givenCommentDto_whenCreateComment_thenReturnCommentDto() throws Exception {
 
@@ -94,7 +107,8 @@ public class CommentControllerTests {
 
     @DisplayName("JUnit test for getAllCommentsByPostId")
     @Test
-    public void givenPageNoAndPageSizeAndSortByAndSortDir_whenGetAllPosts_thenReturnPostResponse() throws Exception {
+    public void givenPostIdAndPageNoAndPageSizeAndSortByAndSortDir_whenGetAllPosts_thenReturnPostResponse()
+            throws Exception {
 
         // given - precondition or setup
         Long postId = post.getId();
@@ -111,6 +125,7 @@ public class CommentControllerTests {
         commentResponse.setTotalElements(contentDto.size());
         commentResponse.setTotalPages(10);
         commentResponse.setLast(true);
+
         //stub method for postService.getAllPosts
         given(commentService.getAllCommentsByPostId(post.getId(), pageNo, pageSize, sortBy, sortDir))
                 .willReturn(commentResponse);
@@ -128,6 +143,82 @@ public class CommentControllerTests {
                 .andExpect(jsonPath("$.['totalElements']", is(((int)commentResponse.getTotalElements()))))
                 .andExpect(jsonPath("$.['totalPages']", is((commentResponse.getTotalPages()))))
                 .andExpect(jsonPath("$.['last']", is((commentResponse.isLast()))));
+    }
+
+    //negative scenario - invalid post id
+    @DisplayName("JUnit test for getAllCommentsByPostId() - negative scenario")
+    @Test
+    public void givenPostIdAndPageNoAndPageSizeAndSortByAndSortDir_whenGetAllPosts_thenReturnEmpty() throws Exception {
+
+        //given - precondition or setup
+        Long postId = 7L; //invalid postId
+        int pageNo = 0;
+        int pageSize = 10;
+        String sortBy = "id";
+        String sortDir = "asc";
+
+        List<CommentDto> contentDto = List.of(commentDto);
+        CommentResponse commentResponse = new CommentResponse();
+        commentResponse.setContent(contentDto);
+        commentResponse.setPageNo(pageNo);
+        commentResponse.setPageSize(pageSize);
+        commentResponse.setTotalElements(contentDto.size());
+        commentResponse.setTotalPages(10);
+        commentResponse.setLast(true);
+        // stub method for postService.getPostById
+        given(commentService.getAllCommentsByPostId(postId, pageNo, pageSize, sortBy, sortDir))
+                .willThrow(new ResourceNotFoundException("Post", "id", postId));
+
+        //when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(get(
+                "/api/posts/{postId}/comments", postId));
+
+        //then - verify the output
+        response.andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @DisplayName("JUnit test for getCommentById")
+    @Test
+    public void givenPostIdAndCommentId_whenGetCommentById_thenReturnCommentDto() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
+        // stub methods
+        given(postService.getPostById(postId)).willReturn(postDto);
+        given(commentService.getCommentById(postId, commentId)).willReturn(commentDto);
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(get(
+                "/api/posts/{postId}/comments/{commentId}", postId, commentId));
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.name", is(commentDto.getName())))
+                .andExpect(jsonPath("$.email", is(commentDto.getEmail())))
+                .andExpect(jsonPath("$.body", is(commentDto.getBody())));
+    }
+
+    //negative scenario - invalid post id
+    @DisplayName("JUnit test for getCommentById() - negative scenario")
+    @Test
+    public void givenPostIdAndCommentId_whenGetCommentById_thenReturnEmpty() throws Exception {
+
+        //given - precondition or setup
+        Long postId = 7L; //invalid postId
+        Long commentId = comment.getId();
+
+        // stub method for postService.getPostById
+        given(postService.getPostById(postId)).willThrow(new ResourceNotFoundException("Post", "id", postId));
+        given(commentService.getCommentById(postId, commentId))
+                .willThrow(new ResourceNotFoundException("Comment", "id", commentId));
+        //when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(get(
+                "/api/posts/{postId}/comments/{commentId}", postId, commentId));
+
+        //then - verify the output
+        response.andExpect(status().isNotFound())
+                .andDo(print());
     }
 
 }

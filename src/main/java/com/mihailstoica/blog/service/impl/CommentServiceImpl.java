@@ -2,6 +2,7 @@ package com.mihailstoica.blog.service.impl;
 
 import com.mihailstoica.blog.entity.Comment;
 import com.mihailstoica.blog.entity.Post;
+import com.mihailstoica.blog.exception.BlogApiException;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.CommentDto;
 import com.mihailstoica.blog.payload.CommentResponse;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -75,7 +77,7 @@ public class CommentServiceImpl implements CommentService {
 
         Page<Comment> comments = commentRepository.findAll(pageable);
 
-        //get content from page object
+        // get content from page object
         List<Comment> commentList = comments.getContent()
                 .stream()
                 .filter(comment -> Objects.equals(comment.getPost().getId(), postId))
@@ -96,4 +98,20 @@ public class CommentServiceImpl implements CommentService {
         return response;
     }
 
+    @Override
+    public CommentDto getCommentById(Long postId, Long commentId) {
+
+        // retrieve post entity by id
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new ResourceNotFoundException("Post", "id", postId));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
+
+        if (!post.getId().equals(comment.getPost().getId())) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Comment does not belong to post");
+        }
+
+        return mapToDTO(comment);
+    }
 }

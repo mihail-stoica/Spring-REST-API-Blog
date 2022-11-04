@@ -126,6 +126,7 @@ public class CommentServiceTests {
         Sort sort = Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
+        // stub methods
         given(commentRepository.findAll(pageable)).willReturn(comments);
         given(comments.getContent()).willReturn(commentList);
 
@@ -142,5 +143,23 @@ public class CommentServiceTests {
         assertThat(savedCommentsDto.isLast()).isEqualTo(this.comments.isLast());
     }
 
+    @DisplayName("JUnit test for getCommentsById")
+    @Test
+    public void givenPostIdAndCommentId_whenGetCommentById_thenReturnCommentDto() {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
+
+        // stub methods
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+        given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
+
+        // when - action or behaviour that we are going to test
+        CommentDto commentDtoReturned = commentService.getCommentById(postId, commentId);
+
+        // then - verify the output
+        assertThat(commentDtoReturned).isEqualTo(commentDto);
+    }
 
 }

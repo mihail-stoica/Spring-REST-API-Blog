@@ -27,7 +27,7 @@ public class CommentController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<CommentResponse> getAllPosts(
+    public ResponseEntity<CommentResponse> getAllCommentsByPostId(
             @PathVariable(name  = "postId") Long postId,
             @RequestParam(value = "pageNo", defaultValue = DEFAULT_PAGE_NUMBER, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) int pageSize,
@@ -36,6 +36,12 @@ public class CommentController {
 
         return new ResponseEntity<>(commentService.getAllCommentsByPostId(postId, pageNo, pageSize, sortBy, sortDir),
                 HttpStatus.OK);
+    }
+
+    @GetMapping("/posts/{postId}/comments/{commentId}")
+    public ResponseEntity<CommentDto> getCommentById(@PathVariable(name = "postId") Long postId,
+                                                     @PathVariable(name = "commentId") Long commentId) {
+        return new ResponseEntity<>(commentService.getCommentById(postId, commentId), HttpStatus.OK);
     }
 
 }
