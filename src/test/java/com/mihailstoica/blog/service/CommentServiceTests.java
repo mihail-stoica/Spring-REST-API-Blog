@@ -7,6 +7,7 @@ import com.mihailstoica.blog.payload.CommentResponse;
 import com.mihailstoica.blog.repository.CommentRepository;
 import com.mihailstoica.blog.repository.PostRepository;
 import com.mihailstoica.blog.service.impl.CommentServiceImpl;
+import com.mihailstoica.blog.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ public class CommentServiceTests {
 
     @InjectMocks
     private CommentServiceImpl commentService;
+
+    @InjectMocks
+    PostServiceImpl postService;
 
     @Mock
     private Page<Comment> comments;
@@ -160,6 +164,44 @@ public class CommentServiceTests {
 
         // then - verify the output
         assertThat(commentDtoReturned).isEqualTo(commentDto);
+    }
+
+//    @DisplayName("JUnit test for updateComment")
+//    @Test
+//    public void given_when_then() {
+//
+//        // given - precondition or setup
+//        Long postId = post.getId();
+//        Long commentId = comment.getId();
+//        CommentDto commentRequest = new CommentDto();
+//        commentRequest.setId(2L);
+//        commentRequest.setName("Test-name new");;
+//        commentRequest.setEmail("testemail@test.new");
+//        commentRequest.setBody("Body of post new");
+//        // stub
+//        //given(postRepository.findById(postId)).willReturn(Optional.of(post));
+//        //given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
+//        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+//        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+//        when(commentService.getCommentById(postId, commentId)).thenReturn(commentDto);
+//
+//        //given(postRepository.findById(postId)).willReturn(Optional.of(post));
+//        //given(commentRepository.save(mapToEntity(commentRequest)));
+//        // when - action or behaviour that we are going to test
+//        CommentDto updatedComment = commentService.updateComment(postId, commentId, commentRequest);
+//        // then - verify the output
+//        assertThat(updatedComment).isEqualTo(commentDto);
+//
+//    }
+
+    private Comment mapToEntity(CommentDto commentDto) {
+
+        Comment comment = new Comment();
+        comment.setId(commentDto.getId());
+        comment.setName(commentDto.getName());
+        comment.setEmail(commentDto.getEmail());
+        comment.setBody(commentDto.getBody());
+        return comment;
     }
 
 }

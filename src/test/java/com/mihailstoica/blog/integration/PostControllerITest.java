@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.payload.PostResponse;
+import com.mihailstoica.blog.repository.CommentRepository;
 import com.mihailstoica.blog.repository.PostRepository;
+import com.mihailstoica.blog.service.CommentService;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +38,13 @@ public class PostControllerITest {
     private PostService postService;
 
     @Autowired
+    CommentService commentService;
+
+    @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -48,6 +56,8 @@ public class PostControllerITest {
 
     @BeforeEach
     public void setup() {
+        postRepository.deleteAll();
+        commentRepository.deleteAll();
         this.post = new Post();
         this.post.setTitle("Title");
         this.post.setDescription("Description");
@@ -71,10 +81,7 @@ public class PostControllerITest {
     @DisplayName("JUnit test for createPost")
     @Test
     public void givenPostDtoObject_whenCreatePost_thenReturnCreatedPostDto() throws Exception {
-
-        // delete post from repository before create
-        postRepository.delete(post);
-
+        
         // given - precondition or setup
 
         // when - action or behaviour that we are going to test

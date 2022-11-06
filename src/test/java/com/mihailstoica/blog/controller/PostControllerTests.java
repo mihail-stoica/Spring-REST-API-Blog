@@ -5,6 +5,7 @@ import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.payload.PostResponse;
+import com.mihailstoica.blog.service.CommentService;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,9 @@ public class PostControllerTests {
 
     @MockBean
     private PostService postService;
+
+    @MockBean
+    private CommentService commentService;
 
     @Autowired
     private ObjectMapper objectMapper;

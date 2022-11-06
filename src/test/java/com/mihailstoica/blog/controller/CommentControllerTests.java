@@ -24,8 +24,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -219,6 +218,33 @@ public class CommentControllerTests {
         //then - verify the output
         response.andExpect(status().isNotFound())
                 .andDo(print());
+    }
+
+    @DisplayName("JUnit test for updateComment")
+    @Test
+    public void givenPostIdAndCommentIdCommentRequest_whenUpdateComment_thenReturnUpdatedCommentDto() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
+        CommentDto commentRequest = new CommentDto();
+        commentRequest.setName("Test-name-request");
+        commentRequest.setEmail("testemail@test-request");
+        commentRequest.setBody("test body request");
+        // stub methods
+        given(commentService.updateComment(postId, commentId, commentRequest)).willAnswer(
+                invocationOnMock -> invocationOnMock.getArgument(2));
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(put("/api/posts/{postId}/comments/{commentId}",
+                postId, commentId, commentRequest)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(commentRequest)));
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.name", is(commentRequest.getName())))
+                .andExpect(jsonPath("$.email", is(commentRequest.getEmail())))
+                .andExpect(jsonPath("$.body", is(commentRequest.getBody())));
     }
 
 }
