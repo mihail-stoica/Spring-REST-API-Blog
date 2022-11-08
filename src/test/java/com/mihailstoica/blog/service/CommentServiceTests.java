@@ -25,6 +25,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTests {
@@ -166,42 +169,44 @@ public class CommentServiceTests {
         assertThat(commentDtoReturned).isEqualTo(commentDto);
     }
 
-//    @DisplayName("JUnit test for updateComment")
-//    @Test
-//    public void given_when_then() {
-//
-//        // given - precondition or setup
-//        Long postId = post.getId();
-//        Long commentId = comment.getId();
-//        CommentDto commentRequest = new CommentDto();
-//        commentRequest.setId(2L);
-//        commentRequest.setName("Test-name new");;
-//        commentRequest.setEmail("testemail@test.new");
-//        commentRequest.setBody("Body of post new");
-//        // stub
-//        //given(postRepository.findById(postId)).willReturn(Optional.of(post));
-//        //given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
-//        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-//        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-//        when(commentService.getCommentById(postId, commentId)).thenReturn(commentDto);
-//
-//        //given(postRepository.findById(postId)).willReturn(Optional.of(post));
-//        //given(commentRepository.save(mapToEntity(commentRequest)));
-//        // when - action or behaviour that we are going to test
-//        CommentDto updatedComment = commentService.updateComment(postId, commentId, commentRequest);
-//        // then - verify the output
-//        assertThat(updatedComment).isEqualTo(commentDto);
-//
-//    }
+    @DisplayName("JUnit test for updateComment")
+    @Test
+    public void givenPostIdAndCommentIdAndCommentDto_whenUpdateComment_thenReturnUpdatedCommentDto() {
 
-    private Comment mapToEntity(CommentDto commentDto) {
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
 
-        Comment comment = new Comment();
-        comment.setId(commentDto.getId());
-        comment.setName(commentDto.getName());
-        comment.setEmail(commentDto.getEmail());
-        comment.setBody(commentDto.getBody());
-        return comment;
+        // stub methods
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+        given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
+        given(commentRepository.save(comment)).willReturn(comment);
+
+        // when - action or behaviour that we are going to test
+        CommentDto commentDtoReturned = commentService.updateComment(postId, commentId, commentDto);
+
+        // then - verify the output
+        assertThat(commentDtoReturned).isEqualTo(commentDto);
+    }
+
+    @DisplayName("JUnit test for deleteComment")
+    @Test
+    public void givenPostIdAndCommentId_whenDeleteComment_thenNothing() {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
+
+        // stub methods
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+        given(commentRepository.findById(commentId)).willReturn(Optional.of(comment));
+        willDoNothing().given(commentRepository).delete(comment);
+
+        // when - action or behaviour that we are going to test
+        commentService.deleteComment(postId, commentId);
+
+        // then - verify the output
+        verify(commentRepository, times(1)).delete(comment);
     }
 
 }

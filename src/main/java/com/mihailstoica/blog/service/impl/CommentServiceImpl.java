@@ -101,23 +101,30 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto getCommentById(Long postId, Long commentId) {
 
-        // retrieve post entity by id
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new ResourceNotFoundException("Post", "id", postId));
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-
-        if (!post.getId().equals(comment.getPost().getId())) {
-            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Comment does not belong to post");
-        }
-
+        Comment comment = retrieveCommentOfPost(postId, commentId);
         return mapToDTO(comment);
     }
 
     @Override
     public CommentDto updateComment(Long postId, Long commentId, CommentDto commentRequest) {
 
+        Comment comment = retrieveCommentOfPost(postId, commentId);
+        comment.setName(commentRequest.getName());
+        comment.setEmail(commentRequest.getEmail());
+        comment.setBody(commentRequest.getBody());
+
+        Comment updatedComment = commentRepository.save(comment);
+        return mapToDTO(updatedComment);
+    }
+
+    @Override
+    public void deleteComment(Long postId, Long commentId) {
+
+        Comment comment = retrieveCommentOfPost(postId, commentId);
+        commentRepository.delete(comment);
+    }
+
+    private Comment retrieveCommentOfPost(Long postId, Long commentId) {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new ResourceNotFoundException("Post", "id", postId));
 
@@ -127,11 +134,7 @@ public class CommentServiceImpl implements CommentService {
         if (!post.getId().equals(comment.getPost().getId())) {
             throw new BlogApiException(HttpStatus.BAD_REQUEST, "Comment does not belong to post");
         }
-        comment.setName(commentRequest.getName());
-        comment.setEmail(commentRequest.getEmail());
-        comment.setBody(commentRequest.getBody());
 
-        Comment updatedComment = commentRepository.save(comment);
-        return mapToDTO(updatedComment);
+        return comment;
     }
 }

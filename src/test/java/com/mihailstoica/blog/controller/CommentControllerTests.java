@@ -247,4 +247,47 @@ public class CommentControllerTests {
                 .andExpect(jsonPath("$.body", is(commentRequest.getBody())));
     }
 
+    //negative scenario - invalid post id
+    @DisplayName("JUnit test for updateComment - negative scenario")
+    @Test
+    public void givenPostIdAndCommentIdCommentRequest_whenUpdateComment_thenReturnEmpty() throws Exception {
+
+        //given - precondition or setup
+        Long postId = 7L; //invalid postId
+        Long commentId = comment.getId();
+        CommentDto commentRequest = new CommentDto();
+        commentRequest.setName("Test-name-request");
+        commentRequest.setEmail("testemail@test-request");
+        commentRequest.setBody("test body request");
+
+        // stub method for postService.getPostById
+        given(commentService.updateComment(postId, commentId, commentRequest)).
+                willThrow(new ResourceNotFoundException("Post", "id", postId));
+        //when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(put("/api/posts/{postId}/comments/{commentId}",
+                postId, commentId, commentRequest)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(commentRequest)));
+
+        //then - verify the output
+        response.andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @DisplayName("JUnit test for deleteComment")
+    @Test
+    public void givenPostIdAndCommentId_whenDeleteComment_thenReturn200() throws Exception {
+
+        // given - precondition or setup
+        Long postId = post.getId();
+        Long commentId = comment.getId();
+        // when - action or behaviour that we are going to test
+        ResultActions response = mockMvc.perform(delete("/api/posts/{postId}/comments/{commentId}",
+                postId, commentId));
+        // then - verify the output
+        response.andExpect(status().isOk())
+                .andDo(print());
+    }
+
+
 }
