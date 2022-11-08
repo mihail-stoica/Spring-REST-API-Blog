@@ -56,8 +56,6 @@ public class PostControllerITest {
 
     @BeforeEach
     public void setup() {
-        postRepository.deleteAll();
-        commentRepository.deleteAll();
         this.post = new Post();
         this.post.setTitle("Title");
         this.post.setDescription("Description");
@@ -81,9 +79,8 @@ public class PostControllerITest {
     @DisplayName("JUnit test for createPost")
     @Test
     public void givenPostDtoObject_whenCreatePost_thenReturnCreatedPostDto() throws Exception {
-        
-        // given - precondition or setup
 
+        postRepository.deleteAll();
         // when - action or behaviour that we are going to test
         ResultActions response = mockMvc.perform(post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)

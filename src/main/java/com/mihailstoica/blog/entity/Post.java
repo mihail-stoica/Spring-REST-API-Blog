@@ -15,9 +15,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"comments"})
 
 @Entity
-@Table(
-        name = "posts", uniqueConstraints = {@UniqueConstraint(columnNames = {"title"})}
-)
+@Table(name = "posts")
 public class Post {
 
     @Id
