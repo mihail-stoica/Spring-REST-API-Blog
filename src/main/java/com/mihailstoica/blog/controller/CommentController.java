@@ -7,10 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 import static com.mihailstoica.blog.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/posts/{postId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
@@ -19,14 +21,14 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @PostMapping("/posts/{postId}/comments")
+    @PostMapping()
     public ResponseEntity<CommentDto> createComment(@PathVariable(name = "postId") Long postId,
-                                                    @RequestBody CommentDto commentDto) {
+                                                    @Valid @RequestBody CommentDto commentDto) {
 
         return new ResponseEntity<>(commentService.createComment(postId, commentDto), HttpStatus.CREATED);
     }
 
-    @GetMapping("/posts/{postId}/comments")
+    @GetMapping()
     public ResponseEntity<CommentResponse> getAllCommentsByPostId(
             @PathVariable(name  = "postId") Long postId,
             @RequestParam(value = "pageNo", defaultValue = DEFAULT_PAGE_NUMBER, required = false) int pageNo,
@@ -38,21 +40,21 @@ public class CommentController {
                 HttpStatus.OK);
     }
 
-    @GetMapping("/posts/{postId}/comments/{commentId}")
+    @GetMapping("/{commentId}")
     public ResponseEntity<CommentDto> getCommentById(@PathVariable(name = "postId") Long postId,
                                                      @PathVariable(name = "commentId") Long commentId) {
 
         return new ResponseEntity<>(commentService.getCommentById(postId, commentId), HttpStatus.OK);
     }
 
-    @PutMapping("/posts/{postId}/comments/{commentId}")
+    @PutMapping("/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable(name = "postId") Long postId,
-                                                     @PathVariable(name = "commentId") Long commentId,
-                                                     @RequestBody CommentDto commentDto) {
+                                                    @PathVariable(name = "commentId") Long commentId,
+                                                    @Valid @RequestBody CommentDto commentDto) {
         return new ResponseEntity<>(commentService.updateComment(postId, commentId, commentDto), HttpStatus.OK);
     }
 
-    @DeleteMapping("/posts/{postId}/comments/{commentId}")
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(@PathVariable(name = "postId") Long postId,
                                                 @PathVariable(name = "commentId") Long commentId) {
         commentService.deleteComment(postId, commentId);
