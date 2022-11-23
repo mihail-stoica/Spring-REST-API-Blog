@@ -7,6 +7,7 @@ import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.CommentDto;
 import com.mihailstoica.blog.payload.CommentResponse;
 import com.mihailstoica.blog.payload.PostDto;
+import com.mihailstoica.blog.security.CustomUserDetailsService;
 import com.mihailstoica.blog.service.CommentService;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -39,6 +41,9 @@ public class CommentControllerTests {
     private PostService postService;
     @MockBean
     private CommentService commentService;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
 
     @MockBean
     private PostController postController;
@@ -73,7 +78,7 @@ public class CommentControllerTests {
         this.comment.setId(1L);
         this.comment.setName("Test-name");
         this.comment.setEmail("testemail@test");
-        this.comment.setBody("test body");
+        this.comment.setBody("test body comment");
         this.comment.setPost(post);
 
         this.commentDto = new CommentDto();
@@ -84,6 +89,7 @@ public class CommentControllerTests {
     }
 
     @DisplayName("JUnit test for createComment")
+    @WithMockUser(username = "user", password = "P4ssword", roles = {"ADMIN"})
     @Test
     public void givenCommentDto_whenCreateComment_thenReturnCommentDto() throws Exception {
 
@@ -221,6 +227,7 @@ public class CommentControllerTests {
     }
 
     @DisplayName("JUnit test for updateComment")
+    @WithMockUser(username = "user", password = "P4ssword", roles = {"ADMIN"})
     @Test
     public void givenPostIdAndCommentIdCommentRequest_whenUpdateComment_thenReturnUpdatedCommentDto() throws Exception {
 
@@ -249,6 +256,7 @@ public class CommentControllerTests {
 
     //negative scenario - invalid post id
     @DisplayName("JUnit test for updateComment - negative scenario")
+    @WithMockUser(username = "user", password = "P4ssword", roles = {"ADMIN"})
     @Test
     public void givenPostIdAndCommentIdCommentRequest_whenUpdateComment_thenReturnEmpty() throws Exception {
 
@@ -275,6 +283,7 @@ public class CommentControllerTests {
     }
 
     @DisplayName("JUnit test for deleteComment")
+    @WithMockUser(username = "user", password = "P4ssword", roles = {"ADMIN"})
     @Test
     public void givenPostIdAndCommentId_whenDeleteComment_thenReturn200() throws Exception {
 

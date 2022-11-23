@@ -6,6 +6,7 @@ import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.payload.PostResponse;
 import com.mihailstoica.blog.repository.CommentRepository;
 import com.mihailstoica.blog.repository.PostRepository;
+import com.mihailstoica.blog.security.CustomUserDetailsService;
 import com.mihailstoica.blog.service.CommentService;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -39,6 +41,9 @@ public class PostControllerITest {
 
     @Autowired
     CommentService commentService;
+
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private PostRepository postRepository;
@@ -77,6 +82,7 @@ public class PostControllerITest {
     }
 
     @DisplayName("JUnit test for createPost")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostDtoObject_whenCreatePost_thenReturnCreatedPostDto() throws Exception {
 
@@ -165,6 +171,7 @@ public class PostControllerITest {
     }
 
     @DisplayName("JUnit test for updatePost positive scenario - valid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturnUpdatePostDtoObject() throws Exception {
 
@@ -191,6 +198,7 @@ public class PostControllerITest {
     }
 
     @DisplayName("JUnit test for updatePost negative scenario - invalid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturn404() throws Exception {
 
@@ -214,6 +222,7 @@ public class PostControllerITest {
     }
 
     @DisplayName("JUnit test for deletePostById positive scenario - valid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostId_whenDeletePostById_thenReturn200() throws Exception {
 
@@ -229,6 +238,7 @@ public class PostControllerITest {
     }
 
     @DisplayName("JUnit test for deletePostById negative scenario - invalid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostId_whenDeletePostById_thenReturn404() throws Exception {
 

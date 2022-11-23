@@ -5,6 +5,7 @@ import com.mihailstoica.blog.entity.Post;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
 import com.mihailstoica.blog.payload.PostDto;
 import com.mihailstoica.blog.payload.PostResponse;
+import com.mihailstoica.blog.security.CustomUserDetailsService;
 import com.mihailstoica.blog.service.CommentService;
 import com.mihailstoica.blog.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -38,6 +39,9 @@ public class PostControllerTests {
 
     @MockBean
     private CommentService commentService;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -61,6 +65,7 @@ public class PostControllerTests {
         this.postDto.setContent(post.getContent());
     }
     @DisplayName("JUnit test for createPost")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostDtoObject_whenCreatePost_thenReturnCreatedPostDto() throws Exception {
 
@@ -71,9 +76,8 @@ public class PostControllerTests {
 
         // when - action or behaviour that we are going to test
         ResultActions response = mockMvc.perform(post("/api/posts")
-                .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postDto)));
-
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(postDto)));
         // then - verify the output
         response.andDo(print())
                 .andExpect(status().isCreated())
@@ -158,6 +162,7 @@ public class PostControllerTests {
     }
 
     @DisplayName("JUnit test for updatePost positive scenario - valid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturnUpdatePostDtoObject() throws Exception {
 
@@ -186,6 +191,7 @@ public class PostControllerTests {
     }
 
     @DisplayName("JUnit test for updatePost negative scenario - invalid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostIdAndUpdatedPostDto_whenUpdatePost_thenReturn404() throws Exception {
 
@@ -212,6 +218,7 @@ public class PostControllerTests {
     }
 
     @DisplayName("JUnit test for deletePostById positive scenario - valid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostId_whenDeletePostById_thenReturn200() throws Exception {
 
@@ -230,6 +237,7 @@ public class PostControllerTests {
     }
 
     @DisplayName("JUnit test for deletePostById negative scenario - invalid post id")
+    @WithMockUser(username = "user",password = "P4ssword",roles = {"ADMIN"})
     @Test
     public void givenPostId_whenDeletePostById_thenReturn404() throws Exception {
 
