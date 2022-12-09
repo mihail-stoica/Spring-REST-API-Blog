@@ -1,5 +1,9 @@
 package com.mihailstoica.blog.security;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,9 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         // get JWT token from http request
         String jwtToken = getJwtTokenFromRequest(request);
@@ -32,14 +35,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwtToken) && tokenProvider.validateToken(jwtToken)) {
             // get username from token
             String username = tokenProvider.getUsernameFromJwt(jwtToken);
+            // load user associated with the token
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            // set to spring security
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
-
-
-        // load user associated with the token
-
-        // set to spring security
-
-
+        filterChain.doFilter(request, response);
     }
 
     // Bearer <accessToken>
