@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwtToken = null;
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            jwtToken = bearerToken.substring(7, bearerToken.length());
+            jwtToken = bearerToken.substring(7);
         }
 
         return jwtToken;

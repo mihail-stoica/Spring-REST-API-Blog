@@ -3,10 +3,12 @@ package com.mihailstoica.blog.controller;
 import com.mihailstoica.blog.entity.Role;
 import com.mihailstoica.blog.entity.User;
 import com.mihailstoica.blog.exception.ResourceNotFoundException;
+import com.mihailstoica.blog.payload.JWTAuthResponse;
 import com.mihailstoica.blog.payload.LoginDto;
 import com.mihailstoica.blog.payload.SignUpDto;
 import com.mihailstoica.blog.repository.RoleRepository;
 import com.mihailstoica.blog.repository.UserRepository;
+import com.mihailstoica.blog.security.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,22 +35,29 @@ public class AuthController {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtTokenProvider tokenProvider;
+
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-                          RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<JWTAuthResponse> authenticateUser(@RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getUsernameOrEmail(), loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return new ResponseEntity<>("User signed-in successfully!", HttpStatus.OK);
+        // get token from tokenProvider
+        String token = tokenProvider.generateToken(authentication);
+
+        //return new ResponseEntity<>(new JWTAuthResponse(token), HttpStatus.OK);
+        return ResponseEntity.ok(new JWTAuthResponse(token));
     }
 
     @PostMapping("/signup")
