@@ -1,5 +1,6 @@
 package com.mihailstoica.blog.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,14 +16,16 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider tokenProvider;
+    @Autowired
+    private JwtTokenProvider tokenProvider;
 
-    private final CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
-        this.tokenProvider = tokenProvider;
-        this.customUserDetailsService = customUserDetailsService;
-    }
+//    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
+//        this.tokenProvider = tokenProvider;
+//        this.customUserDetailsService = customUserDetailsService;
+//    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
