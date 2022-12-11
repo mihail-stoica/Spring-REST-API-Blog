@@ -12,7 +12,7 @@ import javax.validation.Valid;
 import static com.mihailstoica.blog.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api/posts/{postId}/comments")
+@RequestMapping("/api/v1/posts/{postId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
